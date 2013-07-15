@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * The main checksum module file. Contains most of the hook implementations.
+ *
+ * @todo Add uninstall hook to delete our the variables we set.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_checksum_menu() {
+  $items = array();
+  $items['admin/islandora/checksum'] = array(
+    'title' => 'Checksum',
+    'description' => 'Configure the Islandora Checksum creator.',
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('islandora_checksum_admin_form'),
+    'file' => 'includes/admin.form.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
