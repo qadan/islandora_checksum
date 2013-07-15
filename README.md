@@ -6,4 +6,6 @@ A simple module to all repository managers to enable the creation of a checksum 
 
 Clone this module into your drupal modules folder and enable it in drupal.
 
+#### License
 
+[GPLv3](http://www.gnu.org/licenses/gpl-3.0.txt)
