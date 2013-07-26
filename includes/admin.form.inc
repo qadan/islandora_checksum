@@ -49,7 +49,7 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
       'MD5' => t('MD5'),
       'SHA-1' => t('SHA-1'),
       'SHA-256' => t('SHA-256'),
-      'SHA-385' => t('SHA-385'),
+      'SHA-384' => t('SHA-384'),
       'SHA-512' => t('SHA-512'),
     ),
   );
