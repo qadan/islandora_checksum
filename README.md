@@ -13,3 +13,5 @@ Clone this module into your drupal modules folder and enable it in drupal. Then 
 #### Thanks
 
 [Adam Vessey](https://github.com/adam-vessey)
+[Jonathan Green](https://github.com/jonathangreen)
+[Jordan Dukart](https://github.com/jordandukart)
