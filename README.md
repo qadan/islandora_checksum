@@ -2,7 +2,7 @@
 
 ### Build Status
 
-[![Build Status](https://travis-ci.org/ruebot/islandora_checksum.png?branch=7.x)](https://travis-ci.org/ruebot/islandora_checksum
+[![Build Status](https://travis-ci.org/ruebot/islandora_checksum.png?branch=7.x)](https://travis-ci.org/ruebot/islandora_checksum)
 
 ### SUMMARY
 
