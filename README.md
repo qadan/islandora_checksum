@@ -2,7 +2,7 @@
 
 ### Build Status
 
-[![Build Status](https://travis-ci.org/ruebot/islandora_checksum.png?branch=7.x)](https://travis-ci.org/ruebot/islandora_checksum)
+[![Build Status](https://travis-ci.org/islandora/islandora_checksum.png?branch=7.x)](https://travis-ci.org/islandora/islandora_checksum)
 
 ### SUMMARY
 
@@ -12,7 +12,7 @@ A simple module to allow repository managers to enable the creation of a checksu
 
 ### INSTALLATION
 
-`cd $ISLANDORA_HOME/sites/all/modules && git clone https://github.com/ruebot/islandora_checksum && drush pm-enable islandora_checksum`
+`cd $ISLANDORA_HOME/sites/all/modules && git clone https://github.com/islandora/islandora_checksum && drush pm-enable islandora_checksum`
 
 ### Configuration
 
