@@ -2,7 +2,7 @@
 
 ### Build Status
 
-[![Build Status](https://travis-ci.org/islandora/islandora_checksum.png?branch=7.x)](https://travis-ci.org/islandora/islandora_checksum)
+[![Build Status](https://travis-ci.org/Islandora/islandora_checksum.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_checksum)
 
 ### SUMMARY
 
@@ -12,11 +12,19 @@ A simple module to allow repository managers to enable the creation of a checksu
 
 ### INSTALLATION
 
-`cd $ISLANDORA_HOME/sites/all/modules && git clone https://github.com/islandora/islandora_checksum && drush pm-enable islandora_checksum`
+Same as any Drupal module. There are no prerequisites other than Islandora. 
+
+```
+$ cd $ISLANDORA_HOME/sites/all/modules
+$ git clone https://github.com/islandora/islandora_checksum
+$ drush pm-enable islandora_checksum`
+```
 
 ### Configuration
 
 Go to admin/islandora/checksum and turn on checksum creation, and select the checksum algorithm you would like to use.
+
+[![Configuration](http://i.imgur.com/1S92cgQ.png)](http://i.imgur.com/1S92cgQ.png)
 
 ### License
 
