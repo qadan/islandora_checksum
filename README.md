@@ -15,7 +15,7 @@ A simple module to allow repository managers to enable the creation of a checksu
 Same as any Drupal module. There are no prerequisites other than Islandora. 
 
 ```
-$ cd $ISLANDORA_HOME/sites/all/modules
+$ cd $DRUPAL_ROOT/sites/all/modules
 $ git clone https://github.com/islandora/islandora_checksum
 $ drush pm-enable islandora_checksum
 ```
