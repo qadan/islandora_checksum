@@ -17,7 +17,7 @@ Same as any Drupal module. There are no prerequisites other than Islandora.
 ```
 $ cd $ISLANDORA_HOME/sites/all/modules
 $ git clone https://github.com/islandora/islandora_checksum
-$ drush pm-enable islandora_checksum`
+$ drush pm-enable islandora_checksum
 ```
 
 ### Configuration
