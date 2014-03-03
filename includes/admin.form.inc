@@ -21,7 +21,7 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
   $get_default_value = function($name, $default) use(&$form_state) {
     return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
   };
-  
+
   $collections = islandora_checksum_get_collections();
 
   $form['islandora_checksum_checksum_configuration'] = array(
@@ -54,16 +54,21 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
       'SHA-384' => t('SHA-384'),
       'SHA-512' => t('SHA-512'),
     ),
-    
     $form['islandora_checksum_checksum_retro_enable'] = array(
       '#type' => 'fieldset',
       '#title' => t('Retroactively enable checksums'),
     ),
     $form['islandora_checksum_checksum_retro_enable']['collection'] = array(
-       '#type' => 'select',
-       '#title' => t('Collection'),
-       '#options' => $collections,
-       '#description' => t('Select a collection to retractively enable checksums on.'),
+      '#type' => 'select',
+      '#title' => t('Collection'),
+      '#options' => $collections,
+      '#description' => t('Select a collection to retractively enable checksums on.'),
+    ),
+    $form['islandora_checksum_checksum_retro_enable']['islandora_checksum_log_retro_errors'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Log errors'),
+      '#default_value' => variable_get('islandora_checksum_log_retro_errors', 1),
+      '#description' => t("Log errors to watchdog."),
     ),
     $form['islandora_checksum_checksum_retro_enable']['apply_batch'] = array(
       '#type' => 'submit',
