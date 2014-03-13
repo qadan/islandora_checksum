@@ -54,30 +54,30 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
       'SHA-384' => t('SHA-384'),
       'SHA-512' => t('SHA-512'),
     ),
-    $form['islandora_checksum_checksum_retro_enable'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Retroactively enable checksums'),
-    ),
-    $form['islandora_checksum_checksum_retro_enable']['collection'] = array(
-      '#type' => 'select',
-      '#title' => t('Collection'),
-      '#options' => $collections,
-      '#description' => t('Select a collection to retractively enable checksums on.'),
-    ),
-    $form['islandora_checksum_checksum_retro_enable']['islandora_checksum_log_retro_errors'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Log errors'),
-      '#default_value' => variable_get('islandora_checksum_log_retro_errors', 1),
-      '#description' => t("Log errors to watchdog."),
-    ),
-    $form['islandora_checksum_checksum_retro_enable']['apply_batch'] = array(
-      '#type' => 'submit',
-      '#value' => t('Enable'),
-      '#submit' => array('islandora_checksum_apply_retro'),
-    ),
-    $form['islandora_checksum_checksum_retro_enable']['contact_information'] = array(
-      '#markup' => t('This may take a while. Please be patient.'),
-    ),
+  );
+  $form['islandora_checksum_checksum_retro_enable'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Retroactively enable checksums'),
+  );
+  $form['islandora_checksum_checksum_retro_enable']['collection'] = array(
+    '#type' => 'select',
+    '#title' => t('Collection'),
+    '#options' => $collections,
+    '#description' => t('Select a collection to retractively enable checksums on.'),
+  );
+  $form['islandora_checksum_checksum_retro_enable']['islandora_checksum_log_retro_errors'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Log errors'),
+    '#default_value' => variable_get('islandora_checksum_log_retro_errors', 1),
+    '#description' => t("Log errors to watchdog."),
+  );
+  $form['islandora_checksum_checksum_retro_enable']['apply_batch'] = array(
+    '#type' => 'submit',
+    '#value' => t('Enable'),
+    '#submit' => array('islandora_checksum_apply_retro'),
+  );
+  $form['islandora_checksum_checksum_retro_enable']['contact_information'] = array(
+    '#markup' => t('This may take a while. Please be patient.'),
   );
   return system_settings_form($form);
 }
