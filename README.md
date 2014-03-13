@@ -22,7 +22,9 @@ $ drush pm-enable islandora_checksum
 
 ### Configuration
 
-Go to admin/islandora/checksum and turn on checksum creation, and select the checksum algorithm you would like to use. If you would like to retroactively enable checksums on existing objects, choose a collection and click on the 'Enable' button.
+1) Go to admin/islandora/checksum and turn on checksum creation, and select the checksum algorithm you would like to use.
+
+2) To retroactively enable checksums on existing objects, perform step 1 if you have not already done so, choose a collection and click on the 'Enable' button.
 
 [![Configuration](http://i.imgur.com/1S92cgQ.png)](http://i.imgur.com/1S92cgQ.png)
 
