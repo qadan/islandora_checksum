@@ -1,6 +1,6 @@
-## Islandora Checksum [![Build Status](https://travis-ci.org/Islandora/islandora_checksum.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_checksum)
+# Islandora Checksum [![Build Status](https://travis-ci.org/Islandora/islandora_checksum.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_checksum)
 
-# Introduction
+## Introduction
 
 A simple module to allow repository managers to enable the creation of a checksum for objects. If enabled, the following checksum algorithms are available: MD5, SHA-1, SHA-256, SHA-384, SHA-512. 
 
