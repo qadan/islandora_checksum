@@ -102,6 +102,7 @@ function islandora_checksum_apply_retro($form, &$form_state) {
  */
 function islandora_checksum_enable_retro_checksums($collection_pid) {
   $pids = islandora_checksum_get_collection_members($collection_pid);
+  $operations = array();
   $num_objects = count($pids);
   foreach ($pids as $pid) {
     $operations[] = array('islandora_checksum_enable_object_checksums',
