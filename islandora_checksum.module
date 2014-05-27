@@ -129,7 +129,7 @@ function islandora_checksum_enable_object_checksums($pid, $num_objects, &$contex
   $context['message'] = t('Process object "@pid"', array('@pid' => $pid)) . ' ' . $num_objects;
   $tuque = islandora_get_tuque_connection();
   foreach ($object as $ds) {
-    if (islandora_datastream_access(FEDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED') {
+    if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED') {
       $ds->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
       // Calling modifyDatastream triggers
       // islandora_checksum_islandora_datastream_alter(),
