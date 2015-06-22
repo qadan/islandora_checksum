@@ -84,9 +84,19 @@ function islandora_checksum_get_collection_members($pid) {
   // relationship with the specified collection and add all their PIDs to the
   // list.
   $tuque = islandora_get_tuque_connection();
-  $ri_query = 'select $object from <#ri>
-    where  $object <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $pid . '>';
-  $result = $tuque->repository->ri->itqlQuery($ri_query, 'unlimited');
+  $islandora_rels_ext = ISLANDORA_RELS_EXT_URI;
+  $ri_query = <<<EOF
+select ?object from <#ri> where {
+  ?object <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+} UNION {
+  ?object <{$islandora_rels_ext}isPageOf> ?book_newspaper .
+  ?book_newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+} UNION {
+  ?object <fedora-rels-ext:isConstituentOf> ?compound .
+  ?compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+} 
+EOF;
+  $result = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
   foreach ($result as $member) {
     $member_pid = preg_replace('/info:fedora\//', '', $member['object']['value']);
     $members[] = $member_pid;
