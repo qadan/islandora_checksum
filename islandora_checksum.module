@@ -33,7 +33,7 @@ function islandora_checksum_islandora_datastream_alter(AbstractObject &$object, 
   if (variable_get('islandora_checksum_enable_checksum', FALSE) &&
     in_array($context['action'], array('ingest', 'modify')) &&
     !($datastream->checksumType == $checksum_type || (isset($context['params']['checksumType']) && $context['params']['checksumType'] == $checksum_type)) &&
-    (count($datastreams_to_check) == 0 || !in_array($datastream->id, $datastreams_to_check))) {
+    (count($datastreams_to_check) == 0 || in_array($datastream->id, $datastreams_to_check))) {
     if ($context['action'] == 'ingest') {
       $datastream->checksumType = $checksum_type;
     }
@@ -151,8 +151,8 @@ function islandora_checksum_enable_object_checksums($pid, $num_objects, &$contex
   $dsids_to_check = islandora_checksum_unpack_dsid_filter();
   foreach ($object as $ds) {
     if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED' &&
-    (variable_get('islandora_checksum_use_dsid_filter_retro', 0) == 1 && count($dsids_to_check) > 0 &&
-    in_array($datastream->id, $datastreams_to_check))) {
+    (variable_get('islandora_checksum_use_dsid_filter_retro', 0) == 1 && (count($dsids_to_check) == 0 ||
+    in_array($datastream->id, $datastreams_to_check)))) {
       $ds->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
       // Calling modifyDatastream triggers
       // islandora_checksum_islandora_datastream_alter(),
