@@ -81,12 +81,6 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('islandora_checksum_log_retro_errors', 1),
     '#description' => t("Log errors to watchdog."),
   );
-  $form['islandora_checksum_checksum_retro_enable']['islandora_checksum_use_dsid_filter_retro'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use "Datastreams to check".'),
-    '#description' => t('Use the list of datastreams above when processing retroactively.'),
-    '#default_value' => variable_get('islandora_checksum_use_dsid_filter_retro', 0),
-  );
   $form['islandora_checksum_checksum_retro_enable']['apply_batch'] = array(
     '#type' => 'submit',
     '#value' => t('Enable'),

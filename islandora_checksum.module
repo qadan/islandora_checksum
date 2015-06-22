@@ -87,13 +87,20 @@ function islandora_checksum_get_collection_members($pid) {
   $islandora_rels_ext = ISLANDORA_RELS_EXT_URI;
   $ri_query = <<<EOF
 select ?object from <#ri> where {
-  ?object <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
-} UNION {
-  ?object <{$islandora_rels_ext}isPageOf> ?book_newspaper .
-  ?book_newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
-} UNION {
-  ?object <fedora-rels-ext:isConstituentOf> ?compound .
-  ?compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+  {
+    ?object <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+  } UNION {
+    ?object <{$islandora_rels_ext}isPageOf> ?book .
+    ?book <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+  } UNION {
+    ?object <fedora-rels-ext:isConstituentOf> ?compound .
+    ?compound <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+  } UNION {
+    ?object <fedora-rels-ext:isMemberOf> ?issue .
+    ?issue <fedora-rels-ext:isMemberOf> ?newspaper .
+    ?newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+  }
+  
 } 
 EOF;
   $result = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
@@ -151,8 +158,7 @@ function islandora_checksum_enable_object_checksums($pid, $num_objects, &$contex
   $dsids_to_check = islandora_checksum_unpack_dsid_filter();
   foreach ($object as $ds) {
     if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED' &&
-    (variable_get('islandora_checksum_use_dsid_filter_retro', 0) == 1 && (count($dsids_to_check) == 0 ||
-    in_array($datastream->id, $datastreams_to_check)))) {
+    (count($dsids_to_check) == 0 || in_array($datastream->id, $datastreams_to_check))) {
       $ds->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
       // Calling modifyDatastream triggers
       // islandora_checksum_islandora_datastream_alter(),
