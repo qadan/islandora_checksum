@@ -29,9 +29,11 @@ function islandora_checksum_menu() {
  */
 function islandora_checksum_islandora_datastream_alter(AbstractObject &$object, AbstractDatastream &$datastream, &$context) {
   $checksum_type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
+  $datastreams_to_check = islandora_checksum_unpack_dsid_filter();
   if (variable_get('islandora_checksum_enable_checksum', FALSE) &&
     in_array($context['action'], array('ingest', 'modify')) &&
-    !($datastream->checksumType == $checksum_type || (isset($context['params']['checksumType']) && $context['params']['checksumType'] == $checksum_type))) {
+    !($datastream->checksumType == $checksum_type || (isset($context['params']['checksumType']) && $context['params']['checksumType'] == $checksum_type)) &&
+    (count($datastreams_to_check) == 0 || !in_array($datastream->id, $datastreams_to_check))) {
     if ($context['action'] == 'ingest') {
       $datastream->checksumType = $checksum_type;
     }
@@ -136,8 +138,11 @@ function islandora_checksum_enable_object_checksums($pid, $num_objects, &$contex
   $context['results'][] = $pid;
   $context['message'] = t('Process object "@pid"', array('@pid' => $pid)) . ' ' . $num_objects;
   $tuque = islandora_get_tuque_connection();
+  $dsids_to_check = islandora_checksum_unpack_dsid_filter();
   foreach ($object as $ds) {
-    if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED') {
+    if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED' &&
+    (variable_get('islandora_checksum_use_dsid_filter_retro', 0) == 1 && count($dsids_to_check) > 0 &&
+    in_array($datastream->id, $datastreams_to_check))) {
       $ds->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
       // Calling modifyDatastream triggers
       // islandora_checksum_islandora_datastream_alter(),
@@ -178,4 +183,26 @@ function islandora_checksum_batch_finished($success, $results, $operations) {
         )
     );
   }
+}
+
+/**
+ * Get array of DSIDs to apply checksums to.
+ *
+ * @return array
+ *   Array of DSIDs, if not empty then only these DSIDs with get checksums.
+ */
+function islandora_checksum_unpack_dsid_filter() {
+  if (strlen(variable_get('islandora_checksum_dsids_to_check', ''))) {
+    $datastreams_to_check = explode(',',
+      variable_get('islandora_checksum_dsids_to_check', ''));
+  }
+  else {
+    $datastreams_to_check = array();
+  }
+  // Make sure there are no spaces around the DSIDs, so we can get a
+  // match in in_array().
+  foreach ($datastreams_to_check as &$dsid) {
+    $dsid = trim($dsid);
+  }
+  return $datastreams_to_check;
 }
