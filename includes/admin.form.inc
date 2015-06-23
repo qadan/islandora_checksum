@@ -32,7 +32,7 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
   $form['islandora_checksum_checksum_configuration']['islandora_checksum_enable_checksum'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable checksum'),
-    '#description' => t('Enables checksum creation on all datastream.'),
+    '#description' => t('Enables checksum creation on datastreams.'),
     '#default_value' => variable_get('islandora_checksum_enable_checksum', FALSE),
   );
 
@@ -55,6 +55,16 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
       'SHA-512' => t('SHA-512'),
     ),
   );
+
+  $form['islandora_checksum_checksum_configuration']['islandora_checksum_dsids_to_check'] = array(
+    '#title' => t('Datastreams to check'),
+    '#type' => 'textfield',
+    '#size' => 60,
+    '#default_value' => variable_get('islandora_checksum_dsids_to_check', ''),
+    '#description' => t("A comma-separated list of DSIDs. Leave empty to check all datastreams."),
+    '#maxlength' => 255,
+  );
+
   $form['islandora_checksum_checksum_retro_enable'] = array(
     '#type' => 'fieldset',
     '#title' => t('Retroactively enable checksums'),

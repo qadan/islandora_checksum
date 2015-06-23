@@ -13,6 +13,7 @@ function islandora_checksum_uninstall() {
     'islandora_checksum_checksum_type',
     'islandora_checksum_enable_checksum',
     'islandora_checksum_log_retro_errors',
+    'islandora_checksum_dsids_to_check',
   );
   array_walk($variables, 'variable_del');
 }
