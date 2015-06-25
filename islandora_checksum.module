@@ -54,7 +54,8 @@ function islandora_checksum_get_collections() {
   $tuque = islandora_get_tuque_connection();
   $ri_query = 'select $object $label from <#ri>
      where $object <fedora-model:hasModel> <info:fedora/islandora:collectionCModel>
-      and $object <fedora-model:label> $label';
+      and $object <fedora-model:label> $label
+      order by $label';
   $results = $tuque->repository->ri->itqlQuery($ri_query, 'unlimited');
   $collections = array();
   foreach ($results as $member) {
@@ -155,10 +156,10 @@ function islandora_checksum_enable_object_checksums($pid, $num_objects, &$contex
   $context['results'][] = $pid;
   $context['message'] = t('Process object "@pid"', array('@pid' => $pid)) . ' ' . $num_objects;
   $tuque = islandora_get_tuque_connection();
-  $dsids_to_check = islandora_checksum_unpack_dsid_filter();
+  $datastreams_to_check = islandora_checksum_unpack_dsid_filter();
   foreach ($object as $ds) {
     if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED' &&
-    (count($dsids_to_check) == 0 || in_array($datastream->id, $datastreams_to_check))) {
+    (count($datastreams_to_check) == 0 || in_array($ds->id, $datastreams_to_check))) {
       $ds->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
       // Calling modifyDatastream triggers
       // islandora_checksum_islandora_datastream_alter(),
