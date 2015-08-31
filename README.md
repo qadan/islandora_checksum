@@ -23,6 +23,9 @@ Enable and set checksum type in Administration » Islandora » Islandora Utility
 
 ![Configuration](https://camo.githubusercontent.com/21c92e647f343b8deeebaecbadd4bdc588807940/687474703a2f2f692e696d6775722e636f6d2f555272627148642e706e67)
 
+## Documentation
+
+Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+Checksum).
 
 ## Troubleshooting/Issues
 
@@ -39,7 +42,7 @@ Current maintainers:
 
 ## Development
 
-If you would like to contribute to this module, please check out our helpful [Documentation for Developers](https://github.com/Islandora/islandora/wiki#wiki-documentation-for-developers) info, as well as our [Developers](http://islandora.ca/developers) section on the Islandora.ca site.
+If you would like to contribute to this module, please check out [CONTRIBUTING.md](CONTRIBUTING.md). In addition, we have helpful [Documentation for Developers](https://github.com/Islandora/islandora/wiki#wiki-documentation-for-developers) info, as well as our [Developers](http://islandora.ca/developers) section on the [Islandora.ca](http://islandora.ca) site.
 
 Also include any Travis gotcha's here. 
 
