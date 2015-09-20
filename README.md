@@ -4,8 +4,6 @@
 
 A simple module to allow repository managers to enable the creation of a checksum for objects. If enabled, the following checksum algorithms are available: MD5, SHA-1, SHA-256, SHA-384, SHA-512. 
 
-**Note**: This is will checksum all datastreams.
-
 ## Requirements
 
 This module requires the following modules/libraries:
@@ -19,7 +17,7 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 ## Configuration
 
-Enable and set checksum type in Administration » Islandora » Islandora Utility Modules » Checksum (admin/islandora/tools/checksum). To retroactively enable checksums on existing objects, enable and set checksum type if you have not already done so, and choose a collection and click on the 'Enable' button.
+Enable and set checksum type in Administration » Islandora » Islandora Utility Modules » Checksum (admin/islandora/tools/checksum). To retroactively enable checksums on existing objects, enable and set checksum type if you have not already done so, and choose a collection and click on the 'Enable' button. **Note**: Enabling checksums retroactively regenerates derivatives for all objects in the target collection.
 
 ![Configuration](https://camo.githubusercontent.com/21c92e647f343b8deeebaecbadd4bdc588807940/687474703a2f2f692e696d6775722e636f6d2f555272627148642e706e67)
 
