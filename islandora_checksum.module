@@ -106,8 +106,8 @@ select ?object from <#ri> where {
     ?issue <fedora-rels-ext:isMemberOf> ?newspaper .
     ?newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
   }
-  
-} 
+
+}
 EOF;
   $result = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
   foreach ($result as $member) {
