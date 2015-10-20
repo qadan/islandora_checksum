@@ -57,11 +57,11 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
   );
 
   $form['islandora_checksum_checksum_configuration']['islandora_checksum_dsids_to_check'] = array(
-    '#title' => t('Datastreams to check'),
+    '#title' => t('Datastreams to Checksum'),
     '#type' => 'textfield',
     '#size' => 60,
     '#default_value' => variable_get('islandora_checksum_dsids_to_check', ''),
-    '#description' => t("A comma-separated list of DSIDs. Leave empty to check all datastreams."),
+    '#description' => t("A comma-separated list of DSIDs. Leave empty to checksum all datastreams."),
     '#maxlength' => 255,
   );
 
