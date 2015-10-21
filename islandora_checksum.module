@@ -101,8 +101,8 @@ select ?object from <#ri> where {
     ?issue <fedora-rels-ext:isMemberOf> ?newspaper .
     ?newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
   }
-  
-} 
+
+}
 EOF;
   $result = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
   foreach ($result as $member) {
@@ -206,7 +206,7 @@ function islandora_checksum_batch_finished($success, $results, $operations) {
  * Get array of DSIDs to apply checksums to.
  *
  * @return array
- *   Array of DSIDs, if not empty then only these DSIDs with get checksums.
+ *   Array of DSIDs, if not empty then only these DSIDs will get checksums.
  */
 function islandora_checksum_unpack_dsid_filter() {
   if (strlen(variable_get('islandora_checksum_dsids_to_check', ''))) {
