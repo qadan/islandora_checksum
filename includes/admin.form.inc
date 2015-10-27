@@ -48,6 +48,7 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
     '#default_value' => variable_get('islandora_checksum_checksum_type', 'DISABLED'),
     '#multiple' => FALSE,
     '#options' => array(
+      'DISABLED' => t('DISABLED'),
       'MD5' => t('MD5'),
       'SHA-1' => t('SHA-1'),
       'SHA-256' => t('SHA-256'),
