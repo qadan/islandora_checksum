@@ -52,11 +52,16 @@ function islandora_checksum_islandora_datastream_alter(AbstractObject &$object, 
 function islandora_checksum_get_collections() {
   // Query the rindex to get all collections.
   $tuque = islandora_get_tuque_connection();
-  $ri_query = 'select $object $label from <#ri>
-     where $object <fedora-model:hasModel> <info:fedora/islandora:collectionCModel>
-      and $object <fedora-model:label> $label
-      order by $label';
-  $results = $tuque->repository->ri->itqlQuery($ri_query, 'unlimited');
+  $ri_query = <<<EOQ
+SELECT ?object ?label
+FROM <#ri>
+WHERE {
+  ?object <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> ;
+          <fedora-model:label> ?label
+}
+ORDER BY ?label
+EOQ;
+  $results = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
   $collections = array();
   foreach ($results as $member) {
     $pid = preg_replace('/info:fedora\//', '', $member['object']['value']);
