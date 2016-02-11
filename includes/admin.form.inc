@@ -75,7 +75,7 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
     '#type' => 'select',
     '#title' => t('Collection'),
     '#options' => $collections,
-    '#description' => t('Select a collection to retractively enable checksums on.'),
+    '#description' => t('Select a collection to retroactively enable checksums on.'),
   );
   $form['islandora_checksum_checksum_retro_enable']['islandora_checksum_log_retro_errors'] = array(
     '#type' => 'checkbox',
