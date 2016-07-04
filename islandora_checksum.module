@@ -70,9 +70,6 @@ function islandora_checksum_get_collections() {
 SELECT ?object ?label
 FROM <#ri>
 WHERE {
-:x
-
-
           <fedora-model:label> ?label
 }
 ORDER BY ?label
