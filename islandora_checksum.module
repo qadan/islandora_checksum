@@ -25,22 +25,36 @@ function islandora_checksum_menu() {
 }
 
 /**
- * Implements hook_islandora_datastream_alter().
+ * Apply checksums to datastreams using the module config.
+ *
+ * This also means a checksum may not be applied if the config defines it
+ * should not be.
+ *
+ * @param AbstractObject $object
+ *   A Fedora object.
+ * @param AbstractDatastream $datastream
+ *   A datastream on that object.
  */
-function islandora_checksum_islandora_datastream_alter(AbstractObject &$object, AbstractDatastream &$datastream, &$context) {
-  $checksum_type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-  $datastreams_to_check = islandora_checksum_unpack_dsid_filter();
-  if (variable_get('islandora_checksum_enable_checksum', FALSE) &&
-    in_array($context['action'], array('ingest', 'modify')) &&
-    !($datastream->checksumType == $checksum_type || (isset($context['params']['checksumType']) && $context['params']['checksumType'] == $checksum_type)) &&
-    (count($datastreams_to_check) == 0 || in_array($datastream->id, $datastreams_to_check))) {
-    if ($context['action'] == 'ingest') {
-      $datastream->checksumType = $checksum_type;
-    }
-    elseif ($context['action'] == 'modify') {
-      $context['params']['checksumType'] = $checksum_type;
-    }
+function islandora_checksum_apply_checksum_with_config(AbstractObject $object, AbstractDatastream $datastream) {
+  if (variable_get('islandora_checksum_enable_checksum', FALSE) && islandora_checksum_dsid_is_in_filter($datastream->id)) {
+    $checksum_type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
+    module_load_include('inc', 'islandora_checksum', 'includes/checksum');
+    islandora_checksum_set_checksum($object->id, $datastream->id, $checksum_type);
   }
+}
+
+/**
+ * Implements hook_islandora_datastream_ingested().
+ */
+function islandora_checksum_islandora_datastream_ingested(AbstractObject $object, AbstractDatastream $datastream) {
+  islandora_checksum_apply_checksum_with_config($object, $datastream);
+}
+
+/**
+ * Implements hook_islandora_datastream_modified().
+ */
+function islandora_checksum_islandora_datastream_modified(AbstractObject $object, AbstractDatastream $datastream) {
+  islandora_checksum_apply_checksum_with_config($object, $datastream);
 }
 
 /**
@@ -56,7 +70,9 @@ function islandora_checksum_get_collections() {
 SELECT ?object ?label
 FROM <#ri>
 WHERE {
-  ?object <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> ;
+:x
+
+
           <fedora-model:label> ?label
 }
 ORDER BY ?label
@@ -214,17 +230,34 @@ function islandora_checksum_batch_finished($success, $results, $operations) {
  *   Array of DSIDs, if not empty then only these DSIDs will get checksums.
  */
 function islandora_checksum_unpack_dsid_filter() {
-  if (strlen(variable_get('islandora_checksum_dsids_to_check', ''))) {
-    $datastreams_to_check = explode(',',
-      variable_get('islandora_checksum_dsids_to_check', ''));
-  }
-  else {
-    $datastreams_to_check = array();
-  }
-  // Make sure there are no spaces around the DSIDs, so we can get a
-  // match in in_array().
-  foreach ($datastreams_to_check as &$dsid) {
-    $dsid = trim($dsid);
+  $datastreams_to_check = &drupal_static(__FUNCTION__);
+  if (!$datastreams_to_check) {
+    if (strlen(variable_get('islandora_checksum_dsids_to_check', ''))) {
+      $datastreams_to_check = explode(',',
+        variable_get('islandora_checksum_dsids_to_check', ''));
+    }
+    else {
+      $datastreams_to_check = array();
+    }
+    // Make sure there are no spaces around the DSIDs, so we can get a
+    // match in in_array().
+    foreach ($datastreams_to_check as &$dsid) {
+      $dsid = trim($dsid);
+    }
   }
   return $datastreams_to_check;
+}
+
+/**
+ * Checks if a DSID is in the DSID filter.
+ *
+ * @param string $dsid
+ *   The DSID to check.
+ *
+ * @return bool
+ *   Whether or not the DSID was in the filter.
+ */
+function islandora_checksum_dsid_is_in_filter($dsid) {
+  $filter = islandora_checksum_unpack_dsid_filter();
+  return in_array($dsid, $filter);
 }
