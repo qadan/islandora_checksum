@@ -39,7 +39,7 @@ function islandora_checksum_apply_checksum_with_config(AbstractObject $object, A
   if (variable_get('islandora_checksum_enable_checksum', FALSE) && islandora_checksum_dsid_is_in_filter($datastream->id)) {
     $checksum_type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
     module_load_include('inc', 'islandora_checksum', 'includes/checksum');
-    islandora_checksum_set_checksum($object->id, $datastream->id, $checksum_type);
+    islandora_checksum_set_checksums($object->id, array($datastream->id), $checksum_type);
   }
 }
 
@@ -64,40 +64,32 @@ function islandora_checksum_islandora_datastream_modified(AbstractObject $object
  *   List of collection PIDs.
  */
 function islandora_checksum_get_collections() {
-  // Query the rindex to get all collections.
-  $tuque = islandora_get_tuque_connection();
-  $ri_query = <<<EOQ
-SELECT ?object ?label
-FROM <#ri>
-WHERE {
-          <fedora-model:label> ?label
-}
-ORDER BY ?label
-EOQ;
-  $results = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
-  $collections = array();
-  foreach ($results as $member) {
-    $pid = preg_replace('/info:fedora\//', '', $member['object']['value']);
-    $label = $member['label']['value'];
-    // We don't want the root collection.
-    if ($pid != 'islandora:root') {
-      $collections[$pid] = $label;
-    }
-  }
-  return $collections;
+  module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
+  $root = islandora_object_load(variable_get('islandora_repository_pid', 'islandora:root'));
+  return islandora_basic_collection_get_other_collections_as_form_options($root);
 }
 
 /**
- * Query the RI index to get PIDs of all child objects in a collection.
+ * Query the RI index for collection member details.
  *
  * @param string $pid
  *   The PID of Islandora collection.
+ * @param bool $count
+ *   Whether this is a countQuery or not.
+ * @param int $limit
+ *   The number of items to return.
+ * @param array $slice_params
+ *   An optional associative array of parameters to pass in to properly grab
+ *   the slice, including:
+ *   - 'offset_date': an ISO8601 date to filter items before
+ *   - 'offset_pid': a PID to filter items before if dates match.
  *
  * @return array
- *   List of member object PIDs.
+ *   Associative array of RI results, containg the 'object' as the object PID,
+ *   and the 'date' as the object's createdDate.
  */
-function islandora_checksum_get_collection_members($pid) {
-  // List of objects to create Bags for.
+function islandora_checksum_get_collection_member_details($pid, $count = FALSE, $limit = 10, $slice_params = array()) {
+  // List of objects to create checksums for.
   $members = array();
   // Query the rindex to get all the objects that have a 'isMemberOfCollection'
   // relationship with the specified collection and add all their PIDs to the
@@ -105,9 +97,13 @@ function islandora_checksum_get_collection_members($pid) {
   $tuque = islandora_get_tuque_connection();
   $islandora_rels_ext = ISLANDORA_RELS_EXT_URI;
   $ri_query = <<<EOF
-select ?object from <#ri> where {
+PREFIX xs: <xml-schema:>
+SELECT DISTINCT ?object ?date
+FROM <#ri>
+WHERE {
   {
     ?object <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
+    ?object <fedora-model:createdDate> ?date .
   } UNION {
     ?object <{$islandora_rels_ext}isPageOf> ?book .
     ?book <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
@@ -119,13 +115,44 @@ select ?object from <#ri> where {
     ?issue <fedora-rels-ext:isMemberOf> ?newspaper .
     ?newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
   }
-
 }
 EOF;
-  $result = $tuque->repository->ri->sparqlQuery($ri_query, 'unlimited');
-  foreach ($result as $member) {
-    $member_pid = preg_replace('/info:fedora\//', '', $member['object']['value']);
-    $members[] = $member_pid;
+  if ($slice_params) {
+    $ri_query .= <<<EOF
+FILTER(?date > '{$slice_params['offset_date']}'^^xs:dateTime || (?date = '{$slice_params['offset_date']}'^^xs:dateTime && xs:string(?object) > xs:string('info:fedora/{$slice_params['offset_pid']}')))
+ORDER BY ASC(?date) ASC(?object)
+EOF;
+  }
+  if ($count) {
+    return $tuque->repository->ri->countQuery($ri_query, 'sparql');
+  }
+  return $tuque->repository->ri->sparqlQuery($ri_query, $limit);
+}
+
+/**
+ * Query the RI index to get PIDs of all child objects in a collection.
+ *
+ * @param string $pid
+ *   The PID of Islandora collection.
+ * @param int $limit
+ *   The number of items to return.
+ * @param array $slice_params
+ *   An optional associative array of parameters to pass in to properly grab
+ *   the slice, including:
+ *   - 'offset_date': an ISO8601 date to filter items before
+ *   - 'offset_pid': a PID to filter items before if dates match.
+ *
+ * @return array
+ *   List of member object PIDs.
+ */
+function islandora_checksum_get_collection_members($pid, $limit = 10, $slice_params = array()) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $message = islandora_deprecated('7.x-1.8', t('Code should be updated to use islandora_checksum_get_collection_member_details(), which provides both the PID and createdDate of objects so that accurate slicing of member sets can be perfoemd.'));
+  trigger_error(filter_xss($message), E_USER_DEPRECATED);
+  $results = islandora_checksum_get_collection_member_details($pid, FALSE, $limit, $slice_params);
+  $members = array();
+  foreach ($results as $result) {
+    $members[] = $member['object']['value'];
   }
   return $members;
 }
@@ -134,8 +161,43 @@ EOF;
  * Custom button submit handler.
  */
 function islandora_checksum_apply_retro($form, &$form_state) {
-  batch_set(islandora_checksum_enable_retro_checksums($form_state['values']['collection']));
+  batch_set(islandora_checksum_get_collection_checksum_update_batch($form_state['values']['collection']));
 }
+
+/**
+ * Gets the batch definition for enabling or re-applying checksums.
+ *
+ * @param string $collection_pid
+ *   The PID of the collection to apply checksums to.
+ * @param int $limit
+ *   The number of items to do per-batch.
+ * @param array $dsids
+ *   The DSIDs to apply checksums to. Leave empty to use the default
+ *   configuration.
+ *
+ * @return array
+ *   The batch definition.
+ */
+function islandora_checksum_get_collection_checksum_update_batch($collection_pid, $limit = 10, $dsids = array()) {
+  if (empty($dsids)) {
+    $dsids = islandora_checksum_unpack_dsid_filter();
+  }
+  return array(
+    'operations' => array(
+      array(
+        'islandora_checksum_enable_object_checksums',
+        array(
+          $collection_pid,
+          $limit,
+          $dsids,
+        ),
+      ),
+    ),
+    'title' => 'Enabling checksums',
+    'finished' => 'islandora_checksum_batch_finished',
+  );
+}
+
 
 /**
  * Sets up the batch.
@@ -147,6 +209,9 @@ function islandora_checksum_apply_retro($form, &$form_state) {
  *   The batch.
  */
 function islandora_checksum_enable_retro_checksums($collection_pid) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $message = islandora_deprecated('7.x-1.8', t('As this function relies on getting every member of a collection to build the batch, it can time out or run out of memory when attempting to do so on exceptionally large collections. Code should be changed to use islandora_checksum_get_collection_checksum_update_batch(), which instead does a single batch operation that iterates over object sets.'));
+  trigger_error(filter_xss($message), E_USER_DEPRECATED);
   $pids = islandora_checksum_get_collection_members($collection_pid);
   $operations = array();
   $num_objects = count($pids);
@@ -164,41 +229,42 @@ function islandora_checksum_enable_retro_checksums($collection_pid) {
 }
 
 /**
- * Process a single object in the batch.
+ * Batch process to enable checksums for a collection's children.
  *
- * @param string $pid
- *   The PID of the object.
+ * @param string $collection
+ *   The PID of the collection.
+ * @param int $limit
+ *   The number of items to do per-iteration.
+ * @param array $dsids
+ *   The datastream DSIDs to target.
+ * @param array $context
+ *   The batch context.
  */
-function islandora_checksum_enable_object_checksums($pid, $num_objects, &$context) {
-  $object = islandora_object_load($pid);
-  $context['results'][] = $pid;
-  $context['message'] = t('Process object "@pid"', array('@pid' => $pid)) . ' ' . $num_objects;
-  $tuque = islandora_get_tuque_connection();
-  $datastreams_to_check = islandora_checksum_unpack_dsid_filter();
-  foreach ($object as $ds) {
-    if (islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $ds) && $ds->checksumType == 'DISABLED' &&
-    (count($datastreams_to_check) == 0 || in_array($ds->id, $datastreams_to_check))) {
-      $ds->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-      // Calling modifyDatastream triggers
-      // islandora_checksum_islandora_datastream_alter(),
-      // enabling the checksum.
-      try {
-        $ds_info = $tuque->api->m->modifyDatastream($pid, $ds->id);
-      }
-      catch (RepositoryException $e) {
-        if (variable_get('islandora_checksum_log_retro_errors', 1)) {
-          watchdog('islandora_checksum', 'Checksum for !object, !ds_id not enabled: !message',
-            array(
-              '!object' => $pid,
-              '!ds_id' => $ds->id,
-              '!message' => $e->getMessage(),
-            ),
-            WATCHDOG_WARNING
-          );
-        }
-      }
-    }
+function islandora_checksum_enable_object_checksums($collection, $limit, $dsids, &$context) {
+  $sandbox = &$context['sandbox'];
+  module_load_include('inc', 'islandora_checksum', 'includes/checksum');
+  if (empty($sandbox)) {
+    $sandbox['total'] = islandora_checksum_get_collection_member_details($collection, TRUE);
+    $sandbox['current'] = 0;
+    $sandbox['offset_params'] = NULL;
+    $sandbox['checksum_type'] = variable_get('islandora_checksum_checksum_type', 'DISABLED');
   }
+
+  $slice = islandora_checksum_get_collection_member_details($collection, FALSE, $limit, $sandbox['offset_params']);
+  foreach ($slice as $member) {
+    islandora_checksum_set_checksums($member['object']['value'], $dsids, $checksum_type);
+    $sandbox['current']++;
+    $sandbox['offset_params'] = array(
+      'offset_pid' => $member['object']['value'],
+      'offset_date' => $member['date']['value'],
+    );
+    $context['results'][] = $member['object']['value'];
+    $context['message'] = t('Set checksums for %id', array(
+      '%id' => $member['object']['value'],
+    ));
+  }
+
+  $context['finished'] = $sandbox['current'] / $sandbox['total'];
 }
 
 /**

@@ -45,67 +45,47 @@ function islandora_checksum_get_tuque_connection() {
 }
 
 /**
- * Sets the checksum for a datastream.
+ * Sets the checksums for an object's datastreams.
  *
  * Does so safely, without triggering datastream hooks or derivatives.
  *
  * @param string $pid
  *   The PID of the object the datastream belongs to.
- * @param string $dsid
- *   The DSID of the datastream to set checksums for.
- * @param string|null $type
- *   The type of checksum to set. Leave NULL to use the configured default.
+ * @param array $dsids
+ *   The DSIDs to set checksums for. Leave empty to use the configured defaults.
+ * @param array|null $type
+ *   The type of checksums to set. Leave NULL to use the configured default.
  *
  * @throws InvalidArgumentException
- *   If the PID or DSID doesn't exist, or the type is invalid.
+ *   If the object doesn't exist.
  */
-function islandora_checksum_set_checksum($pid, $dsid, $type = NULL) {
+function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) {
   if (is_null($type)) {
     $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-  }
-  // Validate the type.
-  if (!in_array($type, islandora_checksum_valid_types())) {
-    $message = t('Invalid checksum type %type.', array('%type' => $type));
-    throw new InvalidArgumentException($message);
   }
 
   // Verify the datastream.
   $connection = islandora_checksum_get_tuque_connection();
   try {
     $object = $connection->repository->getObject($pid);
-    if (!isset($object[$dsid])) {
-      $message = t('The object %id does not contain a %dsid datastream.', array(
-        '%id' => $pid,
-        '%dsid' => $dsid,
-      ));
-      throw new InvalidArgumentException($message);
-    }
   }
   catch (Exception $e) {
     $message = t('Failed to load object %id.', array('%id' => $pid));
     throw new InvalidArgumentException($message, $e->getCode(), $e);
   }
 
-  // Set the checksum. We're not setting this on $object[$dsid] directly because
-  // we're not guaranteed it's outside of the Islandora Tuque wrapper.
-  $connection->repository->api->m->modifyDatastream($pid, $dsid, array(
-    'checksumType' => $type,
-  ));
-}
+  if (empty($dsids)) {
+    $dsids = islandora_checksum_unpack_dsid_filter();
+  }
 
-/**
- * Gets an array of valid checksum types.
- *
- * @return array
- *   An array of valid checksum types.
- */
-function islandora_checksum_valid_types() {
-  return array(
-    'DISABLED',
-    'MD5',
-    'SHA-1',
-    'SHA-256',
-    'SHA-384',
-    'SHA-512',
-  );
+  foreach ($dsids as $dsid) {
+    if (isset($object[$dsid])) {
+      // Set the checksum. We're not setting this on $object[$dsid] directly
+      // because we're not guaranteed it's outside of the Islandora Tuque
+      // wrapper.
+      $connection->repository->api->m->modifyDatastream($pid, $dsid, array(
+        'checksumType' => $type,
+      ));
+    }
+  }
 }
