@@ -147,7 +147,7 @@ EOF;
  */
 function islandora_checksum_get_collection_members($pid, $limit = 10, $slice_params = array()) {
   module_load_include('inc', 'islandora', 'includes/utilities');
-  $message = islandora_deprecated('7.x-1.8', t('Code should be updated to use islandora_checksum_get_collection_member_details(), which provides both the PID and createdDate of objects so that accurate slicing of member sets can be perfoemd.'));
+  $message = islandora_deprecated('7.x-1.8', t('Code should be updated to use islandora_checksum_get_collection_member_details(), which provides both the PID and createdDate of objects so that accurate slicing of member sets can be performed.'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
   $results = islandora_checksum_get_collection_member_details($pid, FALSE, $limit, $slice_params);
   $members = array();
