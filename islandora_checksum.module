@@ -31,14 +31,14 @@ function islandora_checksum_islandora_datastream_alter(AbstractObject $object, A
   if (variable_get('islandora_checksum_enable_checksum', FALSE) && islandora_checksum_dsid_is_in_filter($datastream->id)) {
     switch ($context['action']) {
       case 'ingest':
-        module_load_include('inc', 'islandora_checksum', 'includes/checksum');
-        islandora_checksum_set_abstract_datastream_checksum($datastream, array(), variable_get('islandora_checksum_checksum_type', 'DISABLED'));
+      case 'modify':
+        $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
+        if ($datastream->checksumType !== $type) {
+          module_load_include('inc', 'islandora_checksum', 'includes/checksum');
+          $datastream->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
+        }
         break;
 
-      case 'modify':
-        module_load_include('inc', 'islandora_checksum', 'includes/checksum');
-        islandora_checksum_modify_checksums($object->id, array($datastream->id), variable_get('islandora_checksum_checksum_type', 'DISABLED'));
-        break;
     }
   }
 }
@@ -223,10 +223,12 @@ function islandora_checksum_enable_retro_checksums($collection_pid) {
  *   The number of items to do per-iteration.
  * @param array $dsids
  *   The datastream DSIDs to target.
+ * @param bool $fire_hooks
+ *   Whether or not to 
  * @param array $context
  *   The batch context.
  */
-function islandora_checksum_enable_object_checksums($collection, $limit, $dsids, &$context) {
+function islandora_checksum_enable_object_checksums($collection, $limit, $dsids, $fire_hooks = TRUE, &$context) {
   $sandbox = &$context['sandbox'];
   module_load_include('inc', 'islandora_checksum', 'includes/checksum');
   if (empty($sandbox)) {
@@ -238,7 +240,7 @@ function islandora_checksum_enable_object_checksums($collection, $limit, $dsids,
 
   $slice = islandora_checksum_get_collection_member_details($collection, FALSE, $limit, $sandbox['offset_params']);
   foreach ($slice as $member) {
-    islandora_checksum_modify_checksums($member['object']['value'], $dsids, $sandbox['checksum_type']);
+    islandora_checksum_set_checksums($member['object']['value'], $dsids, $sandbox['checksum_type']);
     $sandbox['current']++;
     $sandbox['offset_params'] = array(
       'offset_pid' => $member['object']['value'],

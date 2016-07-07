@@ -6,48 +6,7 @@
  */
 
 /**
- * Instantiates Tuque without the Drupal wrapper.
- *
- * When working directly with checksums, it's in our best interest to never
- * fire any hooks or generate derivatives. To prevent any issues (especially
- * race conditions resulting from the latter), we instantiate a base Tuque.
- *
- * @return RepositoryConnection
- *   A RepositoryConnection object containing a base api and repository.
- */
-function islandora_checksum_get_tuque_connection() {
-  $connection = &drupal_static(__FUNCTION__);
-  if (!$connection) {
-    // Get user info.
-    global $user;
-    if ($user->uid == 0) {
-      $user_string = 'anonymous';
-      $pass_string = 'anonymous';
-    }
-    else {
-      $user_string = $user->name;
-      $pass_string = $user->pass;
-    }
-
-    module_load_include('inc', 'islandora', 'includes/tuque');
-    try {
-      $serializer = new FedoraApiSerializer();
-      $connection = new RepositoryConnection(variable_get('islandora_base_url', 'http://localhost:8080/fedora'), $user_string, $pass_string);
-      $api = new FedoraApi($connection, $serializer);
-      $connection->repository = new FedoraRepository($api, new SimpleCache());
-    }
-    catch (Exception $e) {
-      drupal_set_message(t('Unable to connect to the repository %e', array('%e' => $e)), 'error');
-    }
-  }
-
-  return $connection;
-}
-
-/**
  * Modifies an existing object's datastream checksums.
- *
- * Does so safely, without triggering datastream hooks or derivatives.
  *
  * @param string $pid
  *   The PID of the object the datastream belongs to.
@@ -59,56 +18,24 @@ function islandora_checksum_get_tuque_connection() {
  * @throws InvalidArgumentException
  *   If the object doesn't exist.
  */
-function islandora_checksum_modify_checksums($pid, $dsids = array(), $type = NULL) {
+function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) { 
+  $object = islandora_object_load($pid);
+  if (!$object) {
+    throw new InvalidArgumentException(t('The object %id does not exist.', array(
+      '%id' => $pid,
+    )));
+  }
+
+  if (empty($dsids)) {
+    $dsids = islandora_checksum_unpack_dsid_filter();
+  }
   if (is_null($type)) {
     $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
   }
 
-  // Verify the datastream.
-  $connection = islandora_checksum_get_tuque_connection();
-  try {
-    $object = $connection->repository->getObject($pid);
-  }
-  catch (Exception $e) {
-    $message = t('Failed to load object %id.', array('%id' => $pid));
-    throw new InvalidArgumentException($message, $e->getCode(), $e);
-  }
-
-  if (empty($dsids)) {
-    $dsids = islandora_checksum_unpack_dsid_filter();
-  }
-
   foreach ($dsids as $dsid) {
-    if (isset($object[$dsid])) {
-      // Set the checksum. We're not setting this on $object[$dsid] directly
-      // because we're not guaranteed it's outside of the Islandora Tuque
-      // wrapper.
-      $connection->repository->api->m->modifyDatastream($pid, $dsid, array(
-        'checksumType' => $type,
-      ));
+    if (isset($object[$dsid]) && $object[$dsid]->checksumType) {
+      $object[$dsid]->checksumType = $type;
     }
-  }
-}
-
-/**
- * Sets the checksum definition of an object on the datastream itself.
- *
- * @param AbstractDatastream $datastream
- *   The datastream to set the checksums for.
- * @param array $dsids
- *   An array of datastream IDs checksums are valid on. Leave empty to use the
- *   configured defaults.
- * @param string|null $type
- *   The type of checksums to set. Leave NULL to use the configured default.
- */
-function islandora_checksum_set_abstract_datastream_checksum(AbstractDatastream $datastream, $dsids = array(), $type = NULL) {
-  if (empty($dsids)) {
-    $dsids = islandora_checksum_unpack_dsid_filter();
-  }
-  if (in_array($datastream->id, $dsids)) {
-    if (is_null($type)) {
-      $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-    }
-    $datastream->checksumType = $type;
   }
 }
