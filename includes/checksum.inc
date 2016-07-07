@@ -18,7 +18,7 @@
  * @throws InvalidArgumentException
  *   If the object doesn't exist.
  */
-function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) { 
+function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) {
   $object = islandora_object_load($pid);
   if (!$object) {
     throw new InvalidArgumentException(t('The object %id does not exist.', array(

@@ -223,12 +223,10 @@ function islandora_checksum_enable_retro_checksums($collection_pid) {
  *   The number of items to do per-iteration.
  * @param array $dsids
  *   The datastream DSIDs to target.
- * @param bool $fire_hooks
- *   Whether or not to 
  * @param array $context
  *   The batch context.
  */
-function islandora_checksum_enable_object_checksums($collection, $limit, $dsids, $fire_hooks = TRUE, &$context) {
+function islandora_checksum_enable_object_checksums($collection, $limit, $dsids, &$context) {
   $sandbox = &$context['sandbox'];
   module_load_include('inc', 'islandora_checksum', 'includes/checksum');
   if (empty($sandbox)) {
