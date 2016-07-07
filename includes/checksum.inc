@@ -45,7 +45,7 @@ function islandora_checksum_get_tuque_connection() {
 }
 
 /**
- * Sets the checksums for an object's datastreams.
+ * Modifies an existing object's datastream checksums.
  *
  * Does so safely, without triggering datastream hooks or derivatives.
  *
@@ -53,13 +53,13 @@ function islandora_checksum_get_tuque_connection() {
  *   The PID of the object the datastream belongs to.
  * @param array $dsids
  *   The DSIDs to set checksums for. Leave empty to use the configured defaults.
- * @param array|null $type
+ * @param string|null $type
  *   The type of checksums to set. Leave NULL to use the configured default.
  *
  * @throws InvalidArgumentException
  *   If the object doesn't exist.
  */
-function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) {
+function islandora_checksum_modify_checksums($pid, $dsids = array(), $type = NULL) {
   if (is_null($type)) {
     $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
   }
@@ -87,5 +87,28 @@ function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) 
         'checksumType' => $type,
       ));
     }
+  }
+}
+
+/**
+ * Sets the checksum definition of an object on the datastream itself.
+ *
+ * @param AbstractDatastream $datastream
+ *   The datastream to set the checksums for.
+ * @param array $dsids
+ *   An array of datastream IDs checksums are valid on. Leave empty to use the
+ *   configured defaults.
+ * @param string|null $type
+ *   The type of checksums to set. Leave NULL to use the configured default.
+ */
+function islandora_checksum_set_abstract_datastream_checksum(AbstractDatastream $datastream, $dsids = array(), $type = NULL) {
+  if (empty($dsids)) {
+    $dsids = islandora_checksum_unpack_dsid_filter();
+  }
+  if (in_array($datastream->id, $dsids)) {
+    if (is_null($type)) {
+      $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
+    }
+    $datastream->checksumType = $type;
   }
 }

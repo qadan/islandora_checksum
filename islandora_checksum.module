@@ -25,36 +25,22 @@ function islandora_checksum_menu() {
 }
 
 /**
- * Apply checksums to datastreams using the module config.
- *
- * This also means a checksum may not be applied if the config defines it
- * should not be.
- *
- * @param AbstractObject $object
- *   A Fedora object.
- * @param AbstractDatastream $datastream
- *   A datastream on that object.
+ * Implements hook_islandora_datastream_alter().
  */
-function islandora_checksum_apply_checksum_with_config(AbstractObject $object, AbstractDatastream $datastream) {
+function islandora_checksum_islandora_datastream_alter(AbstractObject $object, AbstractDatastream $datastream, &$context) {
   if (variable_get('islandora_checksum_enable_checksum', FALSE) && islandora_checksum_dsid_is_in_filter($datastream->id)) {
-    $checksum_type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-    module_load_include('inc', 'islandora_checksum', 'includes/checksum');
-    islandora_checksum_set_checksums($object->id, array($datastream->id), $checksum_type);
+    switch ($context['action']) {
+      case 'ingest':
+        module_load_include('inc', 'islandora_checksum', 'includes/checksum');
+        islandora_checksum_set_abstract_datastream_checksum($datastream, array(), variable_get('islandora_checksum_checksum_type', 'DISABLED'));
+        break;
+
+      case 'modify':
+        module_load_include('inc', 'islandora_checksum', 'includes/checksum');
+        islandora_checksum_modify_checksums($object->id, array($datastream->id), variable_get('islandora_checksum_checksum_type', 'DISABLED'));
+        break;
+    }
   }
-}
-
-/**
- * Implements hook_islandora_datastream_ingested().
- */
-function islandora_checksum_islandora_datastream_ingested(AbstractObject $object, AbstractDatastream $datastream) {
-  islandora_checksum_apply_checksum_with_config($object, $datastream);
-}
-
-/**
- * Implements hook_islandora_datastream_modified().
- */
-function islandora_checksum_islandora_datastream_modified(AbstractObject $object, AbstractDatastream $datastream) {
-  islandora_checksum_apply_checksum_with_config($object, $datastream);
 }
 
 /**
@@ -252,7 +238,7 @@ function islandora_checksum_enable_object_checksums($collection, $limit, $dsids,
 
   $slice = islandora_checksum_get_collection_member_details($collection, FALSE, $limit, $sandbox['offset_params']);
   foreach ($slice as $member) {
-    islandora_checksum_set_checksums($member['object']['value'], $dsids, $checksum_type);
+    islandora_checksum_modify_checksums($member['object']['value'], $dsids, $sandbox['checksum_type']);
     $sandbox['current']++;
     $sandbox['offset_params'] = array(
       'offset_pid' => $member['object']['value'],
