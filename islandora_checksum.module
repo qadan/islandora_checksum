@@ -28,18 +28,8 @@ function islandora_checksum_menu() {
  * Implements hook_islandora_datastream_alter().
  */
 function islandora_checksum_islandora_datastream_alter(AbstractObject $object, AbstractDatastream $datastream, &$context) {
-  if (variable_get('islandora_checksum_enable_checksum', FALSE) && islandora_checksum_dsid_is_in_filter($datastream->id)) {
-    switch ($context['action']) {
-      case 'ingest':
-      case 'modify':
-        $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-        if ($datastream->checksumType !== $type) {
-          module_load_include('inc', 'islandora_checksum', 'includes/checksum');
-          $datastream->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
-        }
-        break;
-
-    }
+  if ($context['action'] == 'ingest' && variable_get('islandora_checksum_enable_checksum', FALSE) && islandora_checksum_dsid_is_in_filter($datastream->id)) {
+    $datastream->checksumType = variable_get('islandora_checksum_checksum_type', 'DISABLED');
   }
 }
 
@@ -231,6 +221,11 @@ function islandora_checksum_enable_object_checksums($collection, $limit, $dsids,
   module_load_include('inc', 'islandora_checksum', 'includes/checksum');
   if (empty($sandbox)) {
     $sandbox['total'] = islandora_checksum_get_collection_member_details($collection, TRUE);
+    if ($sandbox['total'] == 0) {
+      $context['message'] = t('No objects to apply checksums to.');
+      $context['finished'] = 1;
+      return;
+    }
     $sandbox['current'] = 0;
     $sandbox['offset_params'] = NULL;
     $sandbox['checksum_type'] = variable_get('islandora_checksum_checksum_type', 'DISABLED');
