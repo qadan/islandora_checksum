@@ -34,6 +34,23 @@ function islandora_checksum_islandora_datastream_alter(AbstractObject $object, A
 }
 
 /**
+ * Implements hook_islandora_derivative_alter().
+ */
+function islandora_checksum_islandora_derivative_alter(&$derivatives, AbstractObject $object, $ds_modified_params) {
+  if (!empty($ds_modified_params) && variable_get('islandora_checksum_deriv_regeneration_bypass', FALSE)) {
+    // When only the checksumType is modified, we don't want to trigger
+    // derivative regeneration.
+    $diff = array_diff_key($ds_modified_params, array(
+      'checksumType' => NULL,
+      'dateLastModified' => NULL,
+    ));
+    if (empty($diff)) {
+      $derivatives = array();
+    }
+  }
+}
+
+/**
  * Query the resource index to get a list of collections.
  *
  * @return array
@@ -91,12 +108,17 @@ WHERE {
     ?issue <fedora-rels-ext:isMemberOf> ?newspaper .
     ?newspaper <fedora-rels-ext:isMemberOfCollection> <info:fedora/$pid> .
   }
-}
 EOF;
   if ($slice_params) {
     $ri_query .= <<<EOF
-FILTER(?date > '{$slice_params['offset_date']}'^^xs:dateTime || (?date = '{$slice_params['offset_date']}'^^xs:dateTime && xs:string(?object) > xs:string('info:fedora/{$slice_params['offset_pid']}')))
+  FILTER(?date > '{$slice_params['offset_date']}'^^xs:dateTime || (?date = '{$slice_params['offset_date']}'^^xs:dateTime && xs:string(?object) > xs:string('info:fedora/{$slice_params['offset_pid']}')))
+}
 ORDER BY ASC(?date) ASC(?object)
+EOF;
+  }
+  else {
+    $ri_query .= <<<EOF
+}
 EOF;
   }
   if ($count) {
@@ -171,6 +193,9 @@ function islandora_checksum_get_collection_checksum_update_batch($collection_pid
     ),
     'title' => 'Enabling checksums',
     'finished' => 'islandora_checksum_batch_finished',
+    'init_message' => t('Getting objects to checksum ...'),
+    'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaining: @estimate.'),
+    'error_message' => t('An error occurred and not all checksums were set.'),
   );
 }
 
@@ -240,11 +265,12 @@ function islandora_checksum_enable_object_checksums($collection, $limit, $dsids,
       'offset_date' => $member['date']['value'],
     );
     $context['results'][] = $member['object']['value'];
-    $context['message'] = t('Set checksums for %id', array(
-      '%id' => $member['object']['value'],
-    ));
   }
 
+  $context['message'] = t('Set checksums for @current/@total objects.', array(
+    '@current' => $sandbox['current'],
+    '@total' => $sandbox['total'],
+  ));
   $context['finished'] = $sandbox['current'] / $sandbox['total'];
 }
 

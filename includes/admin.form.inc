@@ -66,6 +66,13 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
     '#maxlength' => 255,
   );
 
+  $form['islandora_checksum_checksum_configuration']['islandora_checksum_deriv_regeneration_bypass'] = array(
+    '#title' => t('Bypass derivative regeneration when updating only checksums'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('islandora_checksum_deriv_regeneration_bypass', FALSE),
+    '#description' => t('Note that this setting will need to be saved first before attempting to retroactively enable checksums using the controls below.'),
+  );
+
   $form['islandora_checksum_checksum_retro_enable'] = array(
     '#type' => 'fieldset',
     '#title' => t('Retroactively enable checksums'),
