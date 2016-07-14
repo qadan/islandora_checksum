@@ -301,7 +301,7 @@ function islandora_checksum_batch_finished($success, $results, $operations) {
  */
 function islandora_checksum_unpack_dsid_filter() {
   $datastreams_to_check = &drupal_static(__FUNCTION__);
-  if (!$datastreams_to_check) {
+  if (is_null($datastreams_to_check)) {
     if (strlen(variable_get('islandora_checksum_dsids_to_check', ''))) {
       $datastreams_to_check = explode(',',
         variable_get('islandora_checksum_dsids_to_check', ''));

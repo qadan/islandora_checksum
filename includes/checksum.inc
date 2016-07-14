@@ -34,7 +34,7 @@ function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) 
   }
 
   foreach ($dsids as $dsid) {
-    if (isset($object[$dsid]) && $object[$dsid]->checksumType) {
+    if (isset($object[$dsid]) && $object[$dsid]->checksumType != $type) {
       $object[$dsid]->checksumType = $type;
     }
   }
