@@ -76,7 +76,7 @@ function islandora_checksum_admin_form(array $form, array &$form_state) {
   $form['islandora_checksum_checksum_retro_enable'] = array(
     '#type' => 'fieldset',
     '#title' => t('Apply or re-apply checksums'),
-    '#description' => t('Checksums will be applied to datastreams without checksums, or re-applied to datastreams whose checksumType does not match the site configured checksum type.'),
+    '#description' => t('Checksums will be applied to datastreams without checksums, or re-applied to datastreams whose checksumType does not match the site configured checksum type. Derivatives will be generated unless the above bypass has been enabled previously.'),
   );
   $form['islandora_checksum_checksum_retro_enable']['collection'] = array(
     '#type' => 'select',
