@@ -46,6 +46,7 @@ function islandora_checksum_islandora_derivative_alter(&$derivatives, AbstractOb
     $diff = array_diff_key($ds_modified_params, array(
       'checksumType' => NULL,
       'dateLastModified' => NULL,
+      'dsid' => NULL,
     ));
     if (empty($diff)) {
       $derivatives = array();
