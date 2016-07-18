@@ -11,7 +11,7 @@
  * @param string $pid
  *   The PID of the object the datastream belongs to.
  * @param array $dsids
- *   The DSIDs to set checksums for. Leave empty to use the configured defaults.
+ *   The DSIDs to set checksums for. Leave empty to set on all datastreams.
  * @param string|null $type
  *   The type of checksums to set. Leave NULL to use the configured default.
  *
@@ -26,16 +26,22 @@ function islandora_checksum_set_checksums($pid, $dsids = array(), $type = NULL) 
     )));
   }
 
-  if (empty($dsids)) {
-    $dsids = islandora_checksum_unpack_dsid_filter();
-  }
   if (is_null($type)) {
     $type = variable_get('islandora_checksum_checksum_type', 'DISABLED');
   }
 
-  foreach ($dsids as $dsid) {
-    if (isset($object[$dsid]) && $object[$dsid]->checksumType != $type) {
-      $object[$dsid]->checksumType = $type;
+  if (empty($dsids)) {
+    foreach ($object as $datastream) {
+      if ($datastream->checksumType != $type) {
+        $datastream->checksumType = $type;
+      }
+    }
+  }
+  else {
+    foreach ($dsids as $dsid) {
+      if (isset($object[$dsid]) && $object[$dsid]->checksumType != $type) {
+        $object[$dsid]->checksumType = $type;
+      }
     }
   }
 }
